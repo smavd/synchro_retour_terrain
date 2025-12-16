@@ -1,45 +1,28 @@
-# synchro_retour_terrain
-Plugin Qgis permettant la synchronisation des données Qgis au retour terrain. 
-Ce plugin automatise l'ajout et la mise à jour d'entités depuis une couche source (la donnée terrain) vers une couche cible (la base de donnée). Dans sa version actuelle il ne gère pas la suppression de données. 
+# QGIS Minimalist Plugin Skeleton
 
------------------
+In various QGIS plugin tutorials you are told to use _Plugin Builder_ tool to create a skeleton for your plugin.
+It is surely helpful as it helps you kickstart your plugin with stuff like UI designer file, auto tests, docs, i18n, scripts and so on.
 
-# Formats gérés : 
-Shapefile ; geopackage
+This QGIS plugin is the complete opposite of a plugin built with _Plugin Builder_: it is a plugin skeleton cut down
+to the bare minimum that still results in a valid QGIS plugin. It consists of two files only: a text file with metadata and a Python file with a bit of code.
 
------------------
-# Pré-requis : 
+## Why?
 
-- Version Qgis : 3.28 to 3.40
-- Système d'exploitation : Windows (les autres n'ont pas été testé)
+For educational purposes, it is useful to understand how a very basic plugin could look like.
 
------------------
+For practical reasons, it is sometimes useful to create a single purpose plugin with the least amount of extra bells and whistles,
+so the code that actually does something is not hidden among generated boilerplate code.
 
-# Installation : 
-- téléhcrager le zip synchro_retour_terrain.zip
-- dans Qgis > Menu Extensions > Installer / Gérer des extensions > Installer depuis un zip > Choisir le zip du plugin et l'installer
+## How to use it?
 
------------------
+1. Create a new python plugin directory
+  * e.g. Linux ```~/.local/share/QGIS/QGIS3/profiles/default/python/plugins/minimal```
+  * e.g. Windows ```C:\Users\USER\AppData\Roaming\QGIS\QGIS3\profiles\default\python\plugins\minimal```
+  * e.g. macOS ```~/Library/Application Support/QGIS/QGIS3/profiles/default/python/plugins/minimal```
+2. Copy ```metadata.txt``` and ```__init__.py``` to that directory
+3. Start QGIS and enable the plugin (menu Plugins > Manager and Install Plugins...)
 
-# Fonctionnement : 
-- La couche source et la couche cible doivent avoir une même structure attributraire.  
-- La couche doit avoir un identifiant unique (IDU par défaut). Le plugin vérifie la présence et l'unicité de cet identifiant dans les deux couches.
-  * Il est conseillé d'utiliser un identifiant généré automatiquement de façon aléatoire, par exemple avec la fonction uuid() de Qgis. Les identifiants incrémentés de type SERIAL sont à proscrire en cas de contributeurs mutliples.
+Now you should see a "Go!" button in your "Plugins" toolbar (make sure it is enabled in menu Settings > Toolbars > Plugins).
 
-- Une option permet d'appliquer les modifications sur une entité uniquement si un champ "date de mise à jour" (date_maj par défaut) est plus récent dans la couche source que dans la couche cible. L'objctif est d'éviter qu'un contributeur écrase les données chargées par un autre contributeur. 
-  * Il est conseillé d'utiliser un champ date_maj de type DateTime et mis à jour automatiquement dans le formulaire de la couche terrain. 
-
------------------
-
-# Changelog :
--- V 0.1
-    Version initiale
-
-----------------
-
-# To do list : 
-- Gestion des suppression d'entités
-- Ajout de nouveaux formats : PostGis ...
-- ...
-
-Toute nouvelle contribution pour améliorer le plugin est la bienvenue. 
+The next step is to change the metadata (e.g. plugin title and description) in ```metadata.txt``` and
+start adding your own code to ```__init__.py```. Have fun!
