@@ -9,7 +9,11 @@ Todo :
 from pathlib import Path
 from collections import Counter
 from qgis.PyQt import uic
+<<<<<<< HEAD
 from qgis.PyQt.QtWidgets import QWidget, QDialog, QMessageBox, QComboBox, QVBoxLayout, QTableWidget, QTableWidgetItem, QHBoxLayout, QPushButton, QGroupBox
+=======
+from qgis.PyQt.QtWidgets import QWidget, QDialog, QMessageBox, QComboBox
+>>>>>>> 7831feda5c2d5f11d61cf65e39a46f8b58e83daf
 from qgis.PyQt.QtCore import QVariant
 from qgis.gui import QgsDataSourceSelectDialog
 from qgis.core import QgsMapLayerType, QgsMapLayer, QgsVectorLayer, QgsProject, QgsFeature,QgsWkbTypes
@@ -109,6 +113,7 @@ class WindowRetourTerrain(QDialog):
             print("La couche choisie n'est pas un vecteur")
 
 
+<<<<<<< HEAD
     def display_report(self, report):
         """
         Affiche un rapport de synchronisation dans une boîte de dialogue (QMessageBox).
@@ -330,6 +335,83 @@ class TerrainSynchronizer:
             'attribut_unique_target': True
         }
 
+=======
+    def check_idu_exists_unique(self, source_layer, target_layer, idu):
+        """
+        Vérifie l'existence et l'unicité d'un attribut dans deux couches QgsVectorLayer.
+        Affiche une QMessageBox en cas d'erreur.
+        
+        Parameters:
+            source_layer (QgsVectorLayer): La couche source.
+            target_layer (QgsVectorLayer): La couche cible.
+            idu (str): Le nom de l'attribut à vérifier.
+        
+        Returns:
+            dict: Un dictionnaire avec les informations suivantes :
+                - 'attribut_existe_source' (bool): Si l'attribut existe dans la couche source.
+                - 'attribut_existe_target' (bool): Si l'attribut existe dans la couche cible.
+                - 'attribut_unique_source' (bool): Si l'attribut est unique dans la couche source.
+                - 'attribut_unique_target' (bool): Si l'attribut est unique dans la couche cible.
+        """
+
+        def afficher_message_erreur(message):
+            """Affiche une QMessageBox avec un message d'erreur."""
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Critical)
+            msg.setWindowTitle("Erreur")
+            msg.setText(message)
+            msg.exec_()
+
+        def verifier_existence_attribut(layer, idu):
+            """Vérifie si l'attribut existe dans la couche."""
+            return idu in [field.name() for field in layer.fields()]
+        
+        def verifier_unicite_attribut(layer, idu):
+            """Vérifie si les valeurs de l'attribut sont uniques dans la couche.
+            Retourne False et les valeurs dupliquées si elles existent.
+            """
+            valeurs = [feature[idu] for feature in layer.getFeatures()]
+            compteur = Counter(valeurs)  # Compte les occurrences de chaque valeur
+            valeurs_dupliquees = [valeur for valeur, count in compteur.items() if count > 1]
+            return len(valeurs_dupliquees) == 0, valeurs_dupliquees
+        
+        # Vérification de l'existence de l'attribut dans chaque couche
+        attribut_existe_source = verifier_existence_attribut(source_layer, idu)
+        attribut_existe_target = verifier_existence_attribut(target_layer, idu)
+
+        if not attribut_existe_source:
+            afficher_message_erreur(f"L'attribut '{idu}' n'existe pas dans la couche source.")
+            return None
+        
+        if not attribut_existe_target:
+            afficher_message_erreur(f"L'attribut '{idu}' n'existe pas dans la couche cible.")
+            return None
+        
+        # Vérification de l'unicité si l'attribut existe
+        attribut_unique_source, valeurs_dupliquees_source = verifier_unicite_attribut(source_layer, idu)
+        attribut_unique_target, valeurs_dupliquees_target = verifier_unicite_attribut(target_layer, idu)
+
+        if not attribut_unique_source:
+            afficher_message_erreur(f"Les valeurs de l'identifiant '{idu}' ne sont pas uniques dans la couche source."
+                                    f"Celà peut poser un probleme lors de la mise à jour des données. Merci de corriger le problème."
+                                    f"Valeurs dupliquées : {valeurs_dupliquees_source}")
+            return None
+
+        if not attribut_unique_target:
+            afficher_message_erreur(f"Les valeurs de l'identifiant '{idu}' ne sont pas uniques dans la couche source."
+                                    f"Celà peut poser un probleme lors de la mise à jour des données. Merci de corriger le problème."
+                                    f"Valeurs dupliquées : {valeurs_dupliquees_source}")
+            return None
+
+        return {
+            'attribut_existe_source': attribut_existe_source,
+            'attribut_existe_target': attribut_existe_target,
+            'attribut_unique_source': attribut_unique_source,
+            'attribut_unique_target': attribut_unique_target
+        }
+
+
+>>>>>>> 7831feda5c2d5f11d61cf65e39a46f8b58e83daf
     def compare_layer_structure(self, target_layer, source_layer):
         ''' Compare la structure des tables attributaires de deux objets QgsVectorLayer
             Renvoie True si les structures sont identiques, sinon False.
@@ -357,7 +439,11 @@ class TerrainSynchronizer:
         print("Les structures des couches sont identiques.")
         return True
 
+<<<<<<< HEAD
     def edit_target(self,target_layer,source_layer,idus_a_supprimer=None,idu='IDU',date_groupBox=None,date_maj="date_maj"):
+=======
+    def edit_target(self, target_layer, source_layer, idu='IDU', date_groupBox=None, date_maj="date_maj"):
+>>>>>>> 7831feda5c2d5f11d61cf65e39a46f8b58e83daf
         """
         Synchronise les entités de la couche source avec celles de la couche cible, en fonction d'un identifiant unique (IDU).
 
@@ -381,12 +467,16 @@ class TerrainSynchronizer:
                 - 'updated_entities': Le nombre d'entités mises à jour dans la couche cible.
                 - 'updated_fields': Un dictionnaire contenant pour chaque IDU les champs modifiés et leurs anciennes/nouvelles valeurs.
         """
+<<<<<<< HEAD
 
+=======
+>>>>>>> 7831feda5c2d5f11d61cf65e39a46f8b58e83daf
         # récupérer l'expression de filtre de la couche cible
         target_filter = target_layer.subsetString()
         print(target_filter)
         # Suppression du filtre sur la couche cible (il est remis à la fin de l'édition)
         target_layer.setSubsetString(None)
+<<<<<<< HEAD
         
         # Initialisation des compteurs et du dictionnaire de suivi des mises à jour
         report = {
@@ -404,12 +494,27 @@ class TerrainSynchronizer:
                     target_layer.deleteFeature(f.id())
                     report['supressed_entities'] += 1
                     print(f"Entité avec IDU {f[idu]} supprimée de la couche cible.")
+=======
+
+        # Ouverture du mode edition sur target layer
+        target_layer.startEditing()
+>>>>>>> 7831feda5c2d5f11d61cf65e39a46f8b58e83daf
 
         # Créer un index pour rechercher les entités par IDU
         target_idu_index = {}
         for target_feature in target_layer.getFeatures():
             target_idu_index[target_feature[idu]] = target_feature
 
+<<<<<<< HEAD
+=======
+        # Initialisation des compteurs et du dictionnaire de suivi des mises à jour
+        report = {
+            'added_entities': 0,
+            'updated_entities': 0,
+            'updated_fields': {}
+        }
+
+>>>>>>> 7831feda5c2d5f11d61cf65e39a46f8b58e83daf
         # boucle sur toutes les entités de source_layer
         for source_feature in source_layer.getFeatures():
             source_idu_value = source_feature[idu]
@@ -491,6 +596,7 @@ class TerrainSynchronizer:
         target_layer.setSubsetString(target_filter)
         
         return report
+<<<<<<< HEAD
     
     def check_attributs(self, source_layer, target_layer, idu):
         ''' Vérifier les entités de la couche target_layer qui n'ont pas de correspondance dans la couche source_layer'''
@@ -567,6 +673,128 @@ class FenetreEntitesOrphelines(QDialog):
                 
         print("IDU sélectionné pour suppression :", selected_idus)
         return selected_idus
+=======
+
+
+    def display_report(self, report):
+        """
+        Affiche un rapport de synchronisation dans une boîte de dialogue (QMessageBox).
+
+        Cette méthode prend en entrée un dictionnaire de rapport généré par la méthode `edit_target` et affiche un résumé
+        des entités ajoutées, des entités mises à jour, ainsi que les détails des champs modifiés dans une boîte de dialogue.
+        La boîte contient deux boutons : "Terminer" et "Synchroniser une autre couche".
+        
+        Args:
+            report (dict): Le dictionnaire de rapport retourné par `edit_target`, contenant :
+                - 'added_entities': Le nombre d'entités ajoutées à la couche cible.
+                - 'updated_entities': Le nombre d'entités mises à jour dans la couche cible.
+                - 'updated_fields': Un dictionnaire avec les champs modifiés et leurs anciennes/nouvelles valeurs pour chaque IDU.
+
+        Returns:
+            None: Cette méthode affiche uniquement la boîte de dialogue et ne retourne rien.
+        """
+        # Créer le message du rapport
+        report_message = f"Synchronisation terminée.\n\n"
+        report_message += f"Nombre d'entités ajoutées : {report['added_entities']}\n"
+        report_message += f"Nombre d'entités mises à jour : {report['updated_entities']}\n"
+
+        # Ajouter les détails sur les champs mis à jour, si disponibles
+        if report['updated_fields']:
+            report_message += "\nDétails des champs mis à jour :\n"
+            for idu, fields in report['updated_fields'].items():
+                report_message += f"\n- IDU {idu} :\n"
+                for field_name, values in fields.items():
+                    old_value = values['old_value']
+                    new_value = values['new_value']
+                    report_message += f"    {field_name} : '{old_value}' -> '{new_value}'\n"
+        else:
+            report_message += "\nAucun champ mis à jour.\n"
+
+        # Créer une boîte de dialogue QMessageBox
+        msg_box = QMessageBox()
+        msg_box.setWindowTitle("Rapport de Synchronisation")
+        msg_box.setText(report_message)
+        msg_box.setIcon(QMessageBox.Information)
+
+        # Ajouter des boutons "Terminer" et "Synchroniser une autre couche"
+        msg_box.addButton("Terminer", QMessageBox.AcceptRole)
+        msg_box.addButton("Synchroniser une autre couche", QMessageBox.ActionRole)
+
+        # Afficher la boîte de dialogue et capturer la réponse de l'utilisateur
+        response = msg_box.exec_()
+
+        # Vérifier quelle action a été choisie
+        if response == QMessageBox.AcceptRole:
+            print("L'utilisateur a choisi de terminer.")
+            # Vous pouvez mettre ici le code pour terminer ou quitter le processus
+        else:
+            print("L'utilisateur a choisi de synchroniser une autre couche.")
+            self.show()
+
+    
+    def update_data(self):
+        print("debut de update_data")
+         
+        #Création de l'objet target_layer
+        target_layer = self.MapLayerComboBox_target.currentLayer()
+        print('Target_layer chargé :', target_layer)
+        
+        # Chargement de la couche source
+        print("chargement de source_layer...")
+        source_layer_path =  self.mQgsFileWidget_source.filePath() # Chemin de la couche source 
+        print('Chemin vers la donnee source : ', source_layer_path)
+        source_layer = None  # Initialiser la variable source_vector_layer
+
+        if self.check_source_format() is True: # On vérifie que l'utilisateur a bien renseigné une couche source au bon format
+            if source_layer_path.endswith('.shp'): # cas ou le fichier layer_source est un shp
+                source_layer = QgsVectorLayer(source_layer_path, "source_layer", "ogr")
+                print('Source_layer chargé : ', source_layer)
+            elif source_layer_path.endswith('.gpkg'): # cas ou le fichier layer_source est un gpkg
+                source_layer = iface.addVectorLayer(source_layer_path, "temp_source_layer", "ogr")
+
+        else:
+            message =f"Veuillez sélectionner une couche source avec un format valide (geopackage ou shapefile)"
+            # Afficher le message d'erreur dans un QMessageBox
+            QMessageBox.critical(None, "Pas de couche source", message)
+        
+        # Vérification de l'existance et l'unicité d'un identifiant unique (IDU par défaut)
+        idu = self.idu_comboBox.currentText()
+        print(idu)
+        idu_test = self.check_idu_exists_unique(target_layer, source_layer, idu)
+        print(idu_test)
+        if idu_test: # Si le idu_test est True
+            # Début de la mise à jour de la target_layer
+            print('Vérification des structures des couches : ')
+            if (target_layer, source_layer): # Tester si les deux couches ont la même structure
+                test_layer_structure = self.compare_layer_structure(target_layer, source_layer)
+                print(test_layer_structure)
+                if test_layer_structure is True:
+                    #Récupération du champ date_maj
+                    date_maj = self.date_combobox.currentText()
+                    print(date_maj)
+                    # Edition des entités de target layer
+                    print("début de l'édition des entités de couche cible")
+                    report = self.edit_target(target_layer,source_layer, idu, self.date_groupBox, date_maj )
+                    print(report)
+                    self.display_report(report)
+                else: 
+                    message = f"""La couche de terrain (couche source) et la couche à mettre à jour (couche cible) ont des structure différentes. 
+                                \n Mise à jour impossible.
+                                \n Vérifiez les couches selectionnées."""
+                    QMessageBox.critical(None, "Pas de couche source", message)
+                    self.show()
+                                
+        # Suppression de la couche temporaire source_layer
+        if source_layer:
+            QgsProject.instance().removeMapLayer(source_layer)
+
+
+        
+    
+
+
+
+>>>>>>> 7831feda5c2d5f11d61cf65e39a46f8b58e83daf
 
 
 
