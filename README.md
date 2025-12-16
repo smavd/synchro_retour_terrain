@@ -1,6 +1,6 @@
 # synchro_retour_terrain
 Plugin Qgis permettant la synchronisation des données Qgis au retour terrain. 
-Ce plugin automatise l'ajout et la mise à jour d'entités depuis une couche source (la donnée terrain) vers une couche cible (la base de donnée). Dans sa version actuelle il ne gère pas la suppression de données. 
+Ce plugin automatise l'ajout, la mise à jour et la suppression d'entités lors de la synchronisation d'une couche source (la donnée terrain) vers une couche cible (la base de donnée). 
 
 -----------------
 
