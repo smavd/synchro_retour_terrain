@@ -32,12 +32,13 @@ Shapefile ; geopackage
 -----------------
 
 # Changelog :
--- V 0.1
+- V 0.1
     Version initiale
--- V1.0 16/12/2025
+- V1.0 16/12/2025
     Ajout de la gestion de suppression d'entités. 
     Renforcement du code - correction de bugs mineurs. 
-
+- V1.1 20/02/2026
+    Correction bug lors de la MAJ des entités. 
 ----------------
 
 # To do list : 

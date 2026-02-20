@@ -194,7 +194,7 @@ class WindowRetourTerrain(QDialog):
         
         # Vérification de l'existance et l'unicité d'un identifiant unique (IDU par défaut)
         idu = self.idu_comboBox.currentText()
-        print(idu)
+        print(f"Attribut IDU sélectionné : {idu}")
 
         # Création de l'objet TerrainSynchronizer
         synchronizer = TerrainSynchronizer(source_layer=source_layer, target_layer=target_layer, idu=idu)
@@ -204,8 +204,8 @@ class WindowRetourTerrain(QDialog):
         print(idu_test)
             
         # Rechercher les entités de la couche cible qui n'ont pas de correspondance dans la couche source
-        idus_orphelins = synchronizer.check_attributs(target_layer, source_layer, idu)
-        print("IDU orphelins : ", idus_orphelins)
+        idus_orphelins = synchronizer.check_deleted_features(target_layer, source_layer, idu)
+        print("IDU dans la couche cible mais absents de la source : ", idus_orphelins)
         features_uniquement_target = [
             f for f in target_layer.getFeatures()
             if f[idu] in idus_orphelins
@@ -226,7 +226,7 @@ class WindowRetourTerrain(QDialog):
                 if test_layer_structure is True:
                     #Récupération du champ date_maj
                     date_maj = self.date_combobox.currentText()
-                    print(f"Date de MAJ : {date_maj}")
+                    print(f"attribut Date de MAJ : {date_maj}")
                     # Edition des entités de target layer
                     print("début de l'édition des entités de couche cible")
                     report = synchronizer.edit_target(
@@ -388,6 +388,9 @@ class TerrainSynchronizer:
         # Suppression du filtre sur la couche cible (il est remis à la fin de l'édition)
         target_layer.setSubsetString(None)
         
+        # 🔴 DÉMARRER SYSTÉMATIQUEMENT L'ÉDITION
+        if not target_layer.isEditable():
+            target_layer.startEditing()
         # Initialisation des compteurs et du dictionnaire de suivi des mises à jour
         report = {
             'added_entities': 0,
@@ -398,7 +401,8 @@ class TerrainSynchronizer:
 
         report['supressed_entities'] = 0
         if idus_a_supprimer:
-            target_layer.startEditing()
+            if not target_layer.isEditable():
+                target_layer.startEditing()
             for f in target_layer.getFeatures():
                 if f[idu] in idus_a_supprimer:
                     target_layer.deleteFeature(f.id())
@@ -413,20 +417,22 @@ class TerrainSynchronizer:
         # boucle sur toutes les entités de source_layer
         for source_feature in source_layer.getFeatures():
             source_idu_value = source_feature[idu]
-
+            print(f"Traitement de l'entité avec IDU {source_idu_value}...")
             # Vérifier si l'entité existe déjà dans la couche cible
+            print(f"Recherche de l'entité avec IDU {source_idu_value} dans la couche cible...")
             if source_idu_value in target_idu_index:
+                print(f"Entité avec IDU {source_idu_value} trouvée dans la couche cible. Vérification des attributs...")
                 target_feature = target_idu_index[source_idu_value]
                 update_required = False
                 updated_fields = {}
 
                 # Comparer les attributs avec la vérification de la date si date_groupBox est activé
-
+                print(f"Vérification de la date maj pour l'entité avec IDU {source_idu_value}...")
                 if date_groupBox and date_groupBox.isChecked():
                     source_date_maj = source_feature['date_maj']
                     target_date_maj = target_feature['date_maj']
                     print("source date : " + str(source_date_maj) + "target date : " + str(target_date_maj) )
-                    print(str(source_date_maj > target_date_maj))
+                    print("source plus récente : " + str(source_date_maj > target_date_maj))
                     # Comparer la date source avec la valeur de date_maj passée en paramètre
                     if date_maj and source_date_maj > target_date_maj:
                         
@@ -465,39 +471,47 @@ class TerrainSynchronizer:
                     # Enregistrer les champs mis à jour pour cette entité
                     report['updated_fields'][source_idu_value] = updated_fields
             else:
+                print(f"Entité avec IDU {source_idu_value} non trouvée dans la couche cible. Ajout de l'entité...")
                 # Ajouter une nouvelle entité à la couche cible
                 new_feature = QgsFeature(target_layer.fields())
 
-                # Copier tous les attributs de la source vers la nouvelle entité
+                # Copier tous les attributs de la source vers la nouvelle entité*
                 for field in source_layer.fields():
                     if field.name() != 'fid':  # Inclure IDU
                         new_feature.setAttribute(field.name(), source_feature[field.name()])
-
+                        print(f"Attribut '{field.name()}' copié pour l'entité avec IDU {source_idu_value} : {source_feature[field.name()]}")
                 # Copier la géométrie de la source vers la nouvelle entité
                 if source_layer.geometryType() != QgsWkbTypes.NullGeometry:
                     new_feature.setGeometry(source_feature.geometry())
+                    print(f"Géométrie copiée pour l'entité avec IDU {source_idu_value}.")
 
                 # Ajouter la nouvelle entité à la couche cible
-                if target_layer.addFeature(new_feature):
-                    report['added_entities'] += 1  # Incrémenter le nombre d'entités ajoutées
-                else:
-                    print(f"Impossible d'ajouter une nouvelle entité avec IDU {source_idu_value} à la couche cible.")
+                target_layer.addFeature(new_feature)
+                report['added_entities'] += 1  # Incrémenter le nombre d'entités ajoutées
 
-        # Valider et sauvegarder les modifications dans la couche cible
-        if not target_layer.commitChanges():
-            print("Erreur lors de la validation des modifications dans la couche cible.")
+        #Validation des modifications dans la couche cible
+        print("Validation des modifications dans la couche cible...")
+
+        success = target_layer.commitChanges()
+
+        if success:
+            print("Modifications validées dans la couche cible.")
+        else:
+            print("❌ Erreur lors de la validation :")
+            print(target_layer.commitErrors())
+            print(target_layer.dataProvider().lastError())
         
         # Remettre le filtre sur la couche cible
         target_layer.setSubsetString(target_filter)
         
         return report
     
-    def check_attributs(self, source_layer, target_layer, idu):
+    def check_deleted_features(self, source_layer, target_layer, idu):
         ''' Vérifier les entités de la couche target_layer qui n'ont pas de correspondance dans la couche source_layer'''
         idu_source = {f[idu] for f in source_layer.getFeatures()}
         idu_target = {f[idu] for f in target_layer.getFeatures()}
-        print("Nombre d'attribut dans source_layer : ", len(idu_source))
-        print("Nombre d'attribut dans target : ", len(idu_target))
+        print("Nombre d'entité dans source_layer : ", len(idu_source))
+        print("Nombre d'entité dans target_layer : ", len(idu_target))
         idu_checked = idu_source - idu_target
         return idu_checked
 
