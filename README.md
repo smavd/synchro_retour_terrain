@@ -42,8 +42,7 @@ Shapefile ; geopackage
 ----------------
 
 # To do list : 
-- Ajout de nouveaux formats : PostGis ...
-- Gérer lorsque la couche cible comporte des champs que la couche source n'a pas (cas d'usage : départ sur le terrain avec une couche alléegée)
-- ...
+- Ajout de nouveaux formats : PostGis etc ...
+- Gestion du transfert des images
 
 Toute nouvelle contribution pour améliorer le plugin est la bienvenue. 
